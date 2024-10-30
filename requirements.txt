@@ -1,0 +1,5 @@
+gradio==3.43.2
+pyserial
+pynput
+pillow
+numpy
