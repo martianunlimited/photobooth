@@ -1,0 +1,18 @@
+[2026-10-28 07:57:07,932] [INFO] Initializing Phase 2 Quality & Latency Benchmark...
+[2026-10-28 07:57:07,942] [INFO] Saved synthetic portrait to E:\vibe_coding\photobooth_v2\artifacts\test_input_640x480.jpg (size: 21859 bytes)
+[2026-10-28 07:57:17,451] [INFO] Saved intermediate noisy ControlNet condition image to E:\vibe_coding\photobooth_v2\artifacts\test_noisy_control_682x512.png (dimensions: (680, 512), size: 846399 bytes)
+[2026-10-28 07:57:17,451] [INFO] Executing 3 timed high-quality inference passes...
+[2026-10-28 07:57:18,455] [INFO] Pass [1/3]: Latency = 1004.35 ms
+[2026-10-28 07:57:19,440] [INFO] Pass [2/3]: Latency = 984.64 ms
+[2026-10-28 07:57:20,437] [INFO] Pass [3/3]: Latency = 996.94 ms
+[2026-10-28 07:57:20,438] [INFO] Saved generated high-quality zombie output to E:\vibe_coding\photobooth_v2\artifacts\test_output_zombie.jpg (size: 21989 bytes)
+[2026-10-28 07:57:20,439] [INFO] Persisted E:\vibe_coding\photobooth_v2\artifacts\quality_and_latency_metrics.json:
+{
+  "mean_latency_ms": 995.31,
+  "p95_latency_ms": 1003.61,
+  "actual_unet_steps": 9,
+  "guidance_scale": 6.0,
+  "peak_vram_mb": 4197.61
+}
+[2026-10-28 07:57:20,439] [INFO] Mean Latency: 995.31 ms | P95: 1003.61 ms | Peak VRAM: 4197.61 MB
+[2026-10-28 07:57:20,439] [INFO] Phase 2 benchmark completed successfully.

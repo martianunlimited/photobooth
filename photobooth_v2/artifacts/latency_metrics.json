@@ -1,0 +1,10 @@
+{
+  "warmup_runs": 3,
+  "benchmark_runs": 10,
+  "mean_latency_ms": 203.06,
+  "p95_latency_ms": 215.68,
+  "min_latency_ms": 189.71,
+  "max_latency_ms": 215.85,
+  "fps_equivalent": 4.92,
+  "peak_vram_mb": 3413.9
+}

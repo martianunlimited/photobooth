@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎃 AI Zombie Photobooth - Generative Kiosk</title>
+  <style>
+    :root {
+      --bg-dark: #0a0808;
+      --bg-card: #141012;
+      --bg-card-border: #2d1818;
+      --accent-orange: #ff7700;
+      --accent-orange-glow: rgba(255, 119, 0, 0.4);
+      --accent-blood: #c41515;
+      --accent-blood-glow: rgba(196, 21, 21, 0.4);
+      --accent-green: #00e676;
+      --text-main: #f5f0f0;
+      --text-muted: #9e8e8e;
+      --font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 15%, #200f12 0%, var(--bg-dark) 100%);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    header {
+      padding: 16px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(12, 8, 10, 0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 2px solid var(--accent-blood);
+      box-shadow: 0 4px 20px rgba(196, 21, 21, 0.2);
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      font-size: 32px;
+      filter: drop-shadow(0 0 10px var(--accent-orange));
+      animation: spooky-flicker 3s infinite;
+    }
+
+    @keyframes spooky-flicker {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.05) rotate(-2deg); }
+      75% { opacity: 0.95; transform: scale(0.98) rotate(1deg); }
+    }
+
+    .brand-title {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, var(--accent-orange), #ff2244);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .header-badges {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: all 0.3s ease;
+    }
+
+    .badge.ready {
+      background: rgba(0, 230, 118, 0.15);
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      box-shadow: 0 0 10px rgba(0, 230, 118, 0.3);
+    }
+
+    .badge.busy {
+      background: rgba(255, 119, 0, 0.2);
+      border-color: var(--accent-orange);
+      color: var(--accent-orange);
+      box-shadow: 0 0 12px var(--accent-orange-glow);
+    }
+
+    .badge.error {
+      background: rgba(196, 21, 21, 0.2);
+      border-color: var(--accent-blood);
+      color: #ff5252;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 6px currentColor;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(0.9); opacity: 0.5; }
+      50% { transform: scale(1.2); opacity: 1; }
+    }
+
+    /* Main Grid Layout */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr 340px;
+      gap: 20px;
+      padding: 20px 28px;
+      max-width: 1700px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 1280px) {
+      main {
+        grid-template-columns: 1fr 1fr;
+      }
+      .sidebar-panel {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 860px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Panels & Cards */
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      position: relative;
+    }
+
+    .panel-header {
+      padding: 14px 18px;
+      background: rgba(0, 0, 0, 0.4);
+      border-bottom: 1px solid var(--bg-card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-tag {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Viewport Display Area */
+    .viewport {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    video#webcam_video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1); /* Mirror camera */
+    }
+
+    canvas#detection_overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      transform: scaleX(-1); /* Match mirrored video */
+    }
+
+    /* Camera Fallback Card */
+    .camera-fallback-card {
+      position: absolute;
+      inset: 0;
+      background: rgba(14, 10, 12, 0.93);
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 24px;
+      text-align: center;
+      z-index: 25;
+    }
+
+    .fallback-icon {
+      font-size: 52px;
+      filter: drop-shadow(0 0 12px var(--accent-orange));
+    }
+
+    .camera-fallback-card h3 {
+      font-size: 17px;
+      color: #fff;
+      font-weight: 800;
+    }
+
+    .camera-fallback-card p {
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 320px;
+      line-height: 1.4;
+    }
+
+    .camera-select-row {
+      width: 100%;
+      max-width: 280px;
+      display: none;
+    }
+
+    .camera-select {
+      width: 100%;
+      background: #201416;
+      color: #fff;
+      border: 1px solid var(--accent-orange);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .btn-camera-start {
+      background: linear-gradient(135deg, #ff7700 0%, #c41515 100%);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(255, 119, 0, 0.4);
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-camera-start:hover {
+      transform: scale(1.03);
+      box-shadow: 0 6px 20px rgba(255, 119, 0, 0.6);
+    }
+
+    .fallback-aux-links {
+      display: flex;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .btn-aux-link {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-aux-link:hover {
+      color: #fff;
+      border-color: var(--accent-orange);
+    }
+
+    /* Countdown & Status Overlays */
+    .countdown-overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .countdown-number {
+      font-size: 96px;
+      font-weight: 900;
+      color: var(--accent-orange);
+      text-shadow: 0 0 30px var(--accent-orange-glow), 0 0 60px var(--accent-blood);
+      animation: count-pop 0.9s ease-out;
+    }
+
+    .countdown-text {
+      font-size: 20px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #fff;
+      margin-top: 8px;
+    }
+
+    @keyframes count-pop {
+      0% { transform: scale(1.6); opacity: 0; }
+      40% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 1; }
+    }
+
+    /* Output Viewport */
+    img#output_image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+      transform: scaleX(-1); /* Horizontally mirror output to match selfie camera view */
+    }
+
+    .output-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 30px;
+    }
+
+    .placeholder-icon {
+      font-size: 64px;
+      opacity: 0.3;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 8, 8, 0.85);
+      backdrop-filter: blur(6px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 30;
+    }
+
+    .spinner {
+      width: 56px;
+      height: 56px;
+      border: 4px solid rgba(255, 119, 0, 0.15);
+      border-top-color: var(--accent-orange);
+      border-right-color: var(--accent-blood);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .spinner-text {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent-orange);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* Controls Panel */
+    .controls-bar {
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-zombify {
+      background: linear-gradient(135deg, #ff7700 0%, #c41515 100%);
+      color: #fff;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      cursor: pointer;
+      text-transform: uppercase;
+      box-shadow: 0 4px 15px rgba(255, 119, 0, 0.35);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-zombify:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 119, 0, 0.5);
+    }
+
+    .btn-zombify:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .btn-zombify:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      filter: grayscale(0.5);
+    }
+
+    .trigger-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .toggle-label input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent-orange);
+      cursor: pointer;
+    }
+
+    .pedal-pill {
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(255, 119, 0, 0.12);
+      border: 1px solid rgba(255, 119, 0, 0.3);
+      color: var(--accent-orange);
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Diagnostics & Telemetry */
+    .telemetry-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 4px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .telemetry-row span.val {
+      color: var(--text-main);
+      font-weight: 600;
+      font-family: monospace;
+    }
+
+    /* Right Explanation Sidebar */
+    .sidebar-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sidebar-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--accent-orange);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 2px solid var(--bg-card-border);
+      padding-bottom: 8px;
+    }
+
+    .gif-container {
+      width: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--bg-card-border);
+      background: #000;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+    }
+
+    .gif-container img {
+      width: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .explainer-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 10px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .step-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent-orange);
+      color: #000;
+      font-weight: 900;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-body strong {
+      color: #fff;
+    }
+
+    .step-body span {
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    /* Footer */
+    footer {
+      padding: 12px 28px;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      border-top: 1px solid var(--bg-card-border);
+      background: rgba(12, 8, 10, 0.5);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🧟</div>
+      <div>
+        <div class="brand-title">AI Zombie Photobooth</div>
+        <div class="brand-subtitle">ControlNet InstructPix2Pix &bull; DPM-Solver 15 Steps &bull; Zero Disk Writes</div>
+      </div>
+    </div>
+    <div class="header-badges">
+      <div id="badge_backend" class="badge ready">
+        <span class="pulse-dot"></span>
+        <span id="badge_backend_text">GPU BACKEND: CONNECTING</span>
+      </div>
+      <div id="badge_trigger" class="badge">
+        <span>TRIGGER: AUTO-FACE</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main 3-Column Interface -->
+  <main>
+    <!-- Column 1: Live Attendee Camera -->
+    <section class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>🎃</span> Live Attendee Camera
+        </div>
+        <div class="panel-tag" id="face_status_tag">Camera Starting...</div>
+      </div>
+
+      <div class="viewport" id="camera_viewport">
+        <video id="webcam_video" autoplay playsinline muted></video>
+        <canvas id="detection_overlay"></canvas>
+
+        <!-- Camera Fallback / Permission Dialog Card -->
+        <div id="camera_fallback_card" class="camera-fallback-card">
+          <div class="fallback-icon">📷</div>
+          <h3 id="camera_msg_title">Camera Starting...</h3>
+          <p id="camera_msg_desc">Click "Start Camera" if prompted or choose a camera from the list.</p>
+          
+          <div class="camera-select-row" id="camera_select_container">
+            <select id="camera_select" class="camera-select" title="Choose Webcam"></select>
+          </div>
+
+          <button id="cam_perm_btn" class="btn-camera-start">📷 Start Camera</button>
+
+          <div class="fallback-aux-links">
+            <button id="btn_upload_photo" class="btn-aux-link">📁 Upload Photo Instead</button>
+            <input type="file" id="file_fallback_input" accept="image/*" style="display: none;">
+          </div>
+        </div>
+
+        <!-- Dynamic Countdown Overlay -->
+        <div id="countdown_overlay" class="countdown-overlay">
+          <div class="countdown-number" id="countdown_num">3</div>
+          <div class="countdown-text" id="countdown_msg">Hold still!</div>
+        </div>
+      </div>
+
+      <div class="controls-bar">
+        <button id="process_button" class="btn-zombify">
+          <span>🧟</span> Zombify Me! (Manual)
+        </button>
+
+        <div class="trigger-options">
+          <label class="toggle-label">
+            <input type="checkbox" id="auto_face_toggle" checked>
+            <span>Auto-Face Capture</span>
+          </label>
+          <div class="pedal-pill" title="Press Ctrl+Alt+P to trigger immediate capture">
+            Pedal: <kbd>Ctrl+Alt+P</kbd>
+          </div>
+        </div>
+
+        <div class="telemetry-row">
+          <span>Active Camera:</span>
+          <span class="val" id="telemetry_cam_name">Detecting...</span>
+        </div>
+        <div class="telemetry-row">
+          <span>Face Proximity:</span>
+          <span class="val" id="telemetry_proximity">0% (min 14%)</span>
+        </div>
+        <div class="telemetry-row">
+          <span>Gaze Alignment:</span>
+          <span class="val" id="telemetry_gaze">Searching...</span>
+        </div>
+        <div class="telemetry-row">
+          <span>Lock Stabilization:</span>
+          <span class="val" id="telemetry_lock">0.0s / 1.0s</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Column 2: Generated Zombie Result -->
+    <section class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>💀</span> Generated Zombie Result
+        </div>
+        <div class="panel-tag" id="cooldown_tag">Ready</div>
+      </div>
+
+      <div class="viewport">
+        <img id="output_image" alt="Zombie Transformation Result">
+
+        <div id="output_placeholder" class="output-placeholder">
+          <div class="placeholder-icon">🪦</div>
+          <h3>Awaiting Photo</h3>
+          <p>Look directly into the camera, click "Zombify Me!", or press the USB foot pedal.</p>
+        </div>
+
+        <div id="loading_overlay" class="loading-overlay">
+          <div class="spinner"></div>
+          <div class="spinner-text">Transforming into Undead...</div>
+        </div>
+      </div>
+
+      <div class="controls-bar">
+        <div class="telemetry-row">
+          <span>Generation Latency:</span>
+          <span class="val" id="telemetry_latency">-- ms</span>
+        </div>
+        <div class="telemetry-row">
+          <span>Scheduler / Steps:</span>
+          <span class="val">DPM-Solver++ (15 steps)</span>
+        </div>
+        <div class="telemetry-row">
+          <span>Guidance / Strength:</span>
+          <span class="val">CFG 6.0 / Str 0.60 / &sigma;=15</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Column 3: How Stable Diffusion Works -->
+    <aside class="sidebar-panel">
+      <div class="sidebar-title">How Stable Diffusion Works</div>
+      
+      <div class="gif-container">
+        <img src="image.gif" alt="Stable Diffusion Denoising Diagram">
+      </div>
+
+      <div class="explainer-list">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <strong>Webcam Auto-Capture</strong><br>
+            <span>MediaPipe BlazeFace tracks attendee presence & frontal gaze in 100% offline WASM.</span>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <strong>ControlNet InstructPix2Pix</strong><br>
+            <span>Gaussian noise (&sigma;=15) is blended into conditioning to preserve silhouette while allowing grotesque zombie texture generation.</span>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <strong>DPM-Solver++ Denoising</strong><br>
+            <span>High-precision standard VAE and Karras sigmas reach photorealistic undead detail in only 15 steps (&lt;1s inference).</span>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <strong>Zero-Disk-Write Pipeline</strong><br>
+            <span>Frames stream directly through RAM buffers from Node.js Express to GPU memory and back.</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    AI Zombie Photobooth &copy; 2026 &bull; FastAPI + PyTorch Diffusers + Express Node.js &bull; Zero Disk Writes
+  </footer>
+
+  <!-- Offscreen canvas for zero-disk-write JPEG capture -->
+  <canvas id="offscreen_canvas" width="640" height="480" style="display: none;"></canvas>
+
+  <!-- MediaPipe Tasks-Vision ES Module Import -->
+  <script type="module">
+    import { FilesetResolver, FaceDetector } from './vendor/tasks-vision.bundle.mjs';
+
+    // Application State Mutexes & Invariants
+    let isProcessing = false;
+    let isCoolingDown = false;
+    let cooldownRemaining = 0;
+    let cooldownInterval = null;
+    let lockTimerStart = null;
+    let countdownActive = false;
+    let countdownTimer = null;
+    let prevBlobUrl = null;
+    let faceDetector = null;
+    let lastVideoTime = -1;
+    let activeMediaStream = null;
+    let lastDetectionResults = null;
+    let lastDetectionTimestamp = 0;
+    let lastQualifiedTime = 0;
+    let smoothedWidthRatio = 0.0;
+    let smoothedYawRatio = 0.50;
+
+    // DOM Elements
+    const video = document.getElementById('webcam_video');
+    const overlayCanvas = document.getElementById('detection_overlay');
+    const overlayCtx = overlayCanvas.getContext('2d');
+    const offscreenCanvas = document.getElementById('offscreen_canvas');
+    const offscreenCtx = offscreenCanvas.getContext('2d');
+
+    const cameraFallbackCard = document.getElementById('camera_fallback_card');
+    const cameraMsgTitle = document.getElementById('camera_msg_title');
+    const cameraMsgDesc = document.getElementById('camera_msg_desc');
+    const camPermBtn = document.getElementById('cam_perm_btn');
+    const cameraSelect = document.getElementById('camera_select');
+    const cameraSelectContainer = document.getElementById('camera_select_container');
+    const btnUploadPhoto = document.getElementById('btn_upload_photo');
+    const fileFallbackInput = document.getElementById('file_fallback_input');
+
+    const outputImg = document.getElementById('output_image');
+    const outputPlaceholder = document.getElementById('output_placeholder');
+    const loadingOverlay = document.getElementById('loading_overlay');
+    const countdownOverlay = document.getElementById('countdown_overlay');
+    const countdownNum = document.getElementById('countdown_num');
+    const countdownMsg = document.getElementById('countdown_msg');
+
+    const processBtn = document.getElementById('process_button');
+    const autoFaceToggle = document.getElementById('auto_face_toggle');
+    const badgeBackend = document.getElementById('badge_backend');
+    const badgeBackendText = document.getElementById('badge_backend_text');
+    const badgeTrigger = document.getElementById('badge_trigger');
+    const faceStatusTag = document.getElementById('face_status_tag');
+    const cooldownTag = document.getElementById('cooldown_tag');
+
+    const telemetryCamName = document.getElementById('telemetry_cam_name');
+    const telemetryProximity = document.getElementById('telemetry_proximity');
+    const telemetryGaze = document.getElementById('telemetry_gaze');
+    const telemetryLock = document.getElementById('telemetry_lock');
+    const telemetryLatency = document.getElementById('telemetry_latency');
+
+    // 1. Backend Health Check Poller
+    async function checkHealth() {
+      try {
+        const resp = await fetch('/api/health');
+        if (resp.ok) {
+          const data = await resp.json();
+          badgeBackend.className = 'badge ready';
+          const gpu = data.gpu_backend ? data.gpu_backend.gpu : 'GPU Ready';
+          badgeBackendText.textContent = `${gpu.toUpperCase()}`;
+        } else {
+          badgeBackend.className = 'badge error';
+          badgeBackendText.textContent = 'BACKEND: DEGRADED';
+        }
+      } catch (e) {
+        badgeBackend.className = 'badge error';
+        badgeBackendText.textContent = 'BACKEND: OFFLINE';
+      }
+    }
+    checkHealth();
+    setInterval(checkHealth, 5000);
+
+    // 2. Camera Device Enumeration
+    async function populateCameraDevices() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(d => d.kind === 'videoinput');
+        
+        if (videoDevices.length > 0) {
+          cameraSelect.innerHTML = '';
+          videoDevices.forEach((dev, idx) => {
+            const opt = document.createElement('option');
+            opt.value = dev.deviceId;
+            opt.textContent = dev.label || `Camera ${idx + 1}`;
+            cameraSelect.appendChild(opt);
+          });
+          if (videoDevices.length > 1) {
+            cameraSelectContainer.style.display = 'block';
+          }
+        }
+      } catch (e) {
+        console.warn('[Photobooth] Failed to enumerate devices:', e);
+      }
+    }
+
+    // 3. Robust Camera Initialization with Multi-Constraint Fallbacks
+    async function initCamera(preferredDeviceId = null) {
+      cameraFallbackCard.style.display = 'flex';
+      cameraMsgTitle.textContent = 'Requesting Camera...';
+      cameraMsgDesc.textContent = 'Please allow camera permission in your browser dialog.';
+      faceStatusTag.textContent = 'Camera Starting...';
+      faceStatusTag.style.color = 'var(--accent-orange)';
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        cameraMsgTitle.textContent = 'Insecure Context / No MediaDevices';
+        cameraMsgDesc.textContent = 'Webcam access requires http://localhost:3000, http://127.0.0.1:3000, or HTTPS. If accessing over network, use localhost.';
+        return;
+      }
+
+      // Stop any existing tracks
+      if (activeMediaStream) {
+        try {
+          activeMediaStream.getTracks().forEach(t => t.stop());
+        } catch (e) {}
+        activeMediaStream = null;
+      }
+
+      const selectedId = preferredDeviceId || cameraSelect.value || null;
+      const deviceConstraint = selectedId ? { exact: selectedId } : undefined;
+
+      let stream = null;
+
+      // Tier 1: Ideal 640x480 resolution at 30 FPS
+      try {
+        const constraints = {
+          video: deviceConstraint 
+            ? { deviceId: deviceConstraint, width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } }
+            : { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
+          audio: false
+        };
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (err1) {
+        console.warn('[Photobooth] Tier 1 constraints rejected, trying fallback:', err1);
+        // Tier 2: Flexible basic constraints
+        try {
+          const fallbackConstraints = {
+            video: deviceConstraint ? { deviceId: deviceConstraint } : true,
+            audio: false
+          };
+          stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+        } catch (err2) {
+          console.warn('[Photobooth] Tier 2 constraints rejected, trying bare video: true:', err2);
+          // Tier 3: Bare minimum
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          } catch (err3) {
+            handleCameraError(err3);
+            return;
+          }
+        }
+      }
+
+      if (!stream) {
+        handleCameraError(new Error('No video stream returned'));
+        return;
+      }
+
+      activeMediaStream = stream;
+      video.srcObject = stream;
+      video.muted = true;
+      video.playsInline = true;
+
+      // Ensure loadedmetadata never hangs indefinitely
+      await Promise.race([
+        new Promise((resolve) => {
+          if (video.videoWidth > 0) return resolve();
+          video.onloadedmetadata = () => resolve();
+          video.onloadeddata = () => resolve();
+        }),
+        new Promise((resolve) => setTimeout(resolve, 2000))
+      ]);
+
+      try {
+        await video.play();
+      } catch (playErr) {
+        console.warn('[Photobooth] video.play() warning:', playErr);
+      }
+
+      overlayCanvas.width = video.videoWidth || 640;
+      overlayCanvas.height = video.videoHeight || 480;
+
+      // Update telemetry
+      const activeTrack = stream.getVideoTracks()[0];
+      const trackLabel = activeTrack ? activeTrack.label : 'Active Webcam';
+      telemetryCamName.textContent = trackLabel.length > 22 ? trackLabel.slice(0, 20) + '...' : trackLabel;
+
+      // Hide fallback card, show video
+      cameraFallbackCard.style.display = 'none';
+      faceStatusTag.textContent = 'Camera Active';
+      faceStatusTag.style.color = 'var(--accent-green)';
+      console.log('[Photobooth] Webcam running successfully:', video.videoWidth, 'x', video.videoHeight);
+
+      // Populate camera labels if they were blank before permission
+      await populateCameraDevices();
+    }
+
+    function handleCameraError(err) {
+      console.error('[Photobooth] Camera access error:', err);
+      cameraFallbackCard.style.display = 'flex';
+      faceStatusTag.textContent = 'Camera Blocked';
+      faceStatusTag.style.color = '#ff5252';
+
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        cameraMsgTitle.textContent = 'Camera Permission Blocked';
+        cameraMsgDesc.textContent = 'Please click the camera/lock icon in your browser URL address bar to Allow Camera access, then click "Start Camera" below.';
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        cameraMsgTitle.textContent = 'No Camera Detected';
+        cameraMsgDesc.textContent = 'No webcam was detected on this computer. Connect a USB webcam or click "Upload Photo Instead".';
+      } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+        cameraMsgTitle.textContent = 'Camera In Use';
+        cameraMsgDesc.textContent = 'Your webcam is being used by another application (Zoom, Teams, or another browser window). Please close conflicting apps and click "Start Camera".';
+      } else {
+        cameraMsgTitle.textContent = 'Camera Offline';
+        cameraMsgDesc.textContent = `${err.message || err.name}. Click "Start Camera" to grant access.`;
+      }
+    }
+
+    // Camera Switch Event
+    cameraSelect.addEventListener('change', () => {
+      if (cameraSelect.value) {
+        initCamera(cameraSelect.value);
+      }
+    });
+
+    camPermBtn.addEventListener('click', () => {
+      initCamera(cameraSelect.value || null);
+    });
+
+    // File Upload Fallback
+    btnUploadPhoto.addEventListener('click', () => {
+      fileFallbackInput.click();
+    });
+
+    fileFallbackInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const img = new Image();
+        img.onload = async () => {
+          offscreenCtx.drawImage(img, 0, 0, 640, 480);
+          const blob = await new Promise(res => offscreenCanvas.toBlob(res, 'image/jpeg', 0.95));
+          if (blob) {
+            executeZombify(blob);
+          }
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // 4. Offline MediaPipe BlazeFace Initialization
+    async function initDetector() {
+      try {
+        console.log('[Photobooth] Loading MediaPipe Fileset from ./vendor/wasm ...');
+        const vision = await FilesetResolver.forVisionTasks('./vendor/wasm');
+        faceDetector = await FaceDetector.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: './vendor/models/blaze_face_short_range.tflite',
+            delegate: 'GPU',
+          },
+          runningMode: 'VIDEO',
+          minDetectionConfidence: 0.60,
+        });
+        console.log('[Photobooth] FaceDetector loaded with GPU delegate.');
+      } catch (err) {
+        console.warn('[Photobooth] GPU delegate failed, falling back to CPU:', err);
+        const vision = await FilesetResolver.forVisionTasks('./vendor/wasm');
+        faceDetector = await FaceDetector.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: './vendor/models/blaze_face_short_range.tflite',
+            delegate: 'CPU',
+          },
+          runningMode: 'VIDEO',
+          minDetectionConfidence: 0.60,
+        });
+        console.log('[Photobooth] FaceDetector loaded with CPU delegate.');
+      }
+    }
+
+    // 5. Capture & Process Image (Mutex-Protected Zero-Disk-Write)
+    async function processImage() {
+      if (isProcessing) {
+        console.warn('[Photobooth] Mutex locked: Image generation already in progress');
+        return;
+      }
+
+      if (!video.videoWidth && (!fileFallbackInput.files || !fileFallbackInput.files.length)) {
+        alert('Please start the camera or upload a photo first!');
+        return;
+      }
+
+      // Capture frame at exact 640x480 resolution
+      offscreenCtx.drawImage(video, 0, 0, 640, 480);
+      const blob = await new Promise((resolve) => {
+        offscreenCanvas.toBlob(resolve, 'image/jpeg', 0.95);
+      });
+
+      if (!blob) {
+        alert('Failed to capture frame from video.');
+        return;
+      }
+
+      await executeZombify(blob);
+    }
+
+    async function executeZombify(imageBlob) {
+      if (isProcessing) return;
+      isProcessing = true;
+      resetCountdown();
+      lockTimerStart = null;
+
+      // Update UI state
+      processBtn.disabled = true;
+      loadingOverlay.style.display = 'flex';
+      badgeBackend.className = 'badge busy';
+      badgeBackendText.textContent = 'INFERENCING...';
+
+      const startTime = performance.now();
+
+      try {
+        const formData = new FormData();
+        formData.append('file', imageBlob, 'capture.jpg');
+
+        const response = await fetch('/api/zombify', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`Server returned ${response.status}: ${errText}`);
+        }
+
+        const genTimeHeader = response.headers.get('x-gen-time');
+        const durationMs = Math.round(performance.now() - startTime);
+        telemetryLatency.textContent = genTimeHeader ? `${genTimeHeader} (total ${durationMs}ms)` : `${durationMs}ms`;
+
+        const zombieBlob = await response.blob();
+
+        // Safe URL allocation with previous revocation (Zero memory leak)
+        const newUrl = URL.createObjectURL(zombieBlob);
+        if (prevBlobUrl) {
+          URL.revokeObjectURL(prevBlobUrl);
+        }
+        prevBlobUrl = newUrl;
+
+        outputImg.src = newUrl;
+        outputImg.style.display = 'block';
+        outputPlaceholder.style.display = 'none';
+
+        // Start 3-second cooldown
+        startCooldown(3);
+      } catch (err) {
+        console.error('[Photobooth] Capture/Zombify failed:', err);
+        alert('Transformation failed: ' + err.message);
+      } finally {
+        isProcessing = false;
+        processBtn.disabled = false;
+        loadingOverlay.style.display = 'none';
+        badgeBackend.className = 'badge ready';
+        checkHealth();
+      }
+    }
+
+    // 6. Cooldown Management
+    function startCooldown(seconds) {
+      isCoolingDown = true;
+      cooldownRemaining = seconds;
+      cooldownTag.textContent = `Cooldown (${cooldownRemaining}s)`;
+      cooldownTag.style.color = 'var(--accent-orange)';
+
+      if (cooldownInterval) clearInterval(cooldownInterval);
+      cooldownInterval = setInterval(() => {
+        cooldownRemaining--;
+        if (cooldownRemaining <= 0) {
+          clearInterval(cooldownInterval);
+          isCoolingDown = false;
+          cooldownTag.textContent = 'Ready';
+          cooldownTag.style.color = '';
+        } else {
+          cooldownTag.textContent = `Cooldown (${cooldownRemaining}s)`;
+        }
+      }, 1000);
+    }
+
+    // 7. Countdown Overlay Logic
+    function startCountdown() {
+      if (countdownActive || isProcessing || isCoolingDown) return;
+      countdownActive = true;
+      countdownOverlay.style.display = 'flex';
+
+      let count = 3;
+      countdownNum.textContent = '3';
+      countdownMsg.textContent = 'Hold still!';
+
+      countdownTimer = setInterval(() => {
+        count--;
+        if (count === 2) {
+          countdownNum.textContent = '2';
+          countdownMsg.textContent = 'Looking great!';
+        } else if (count === 1) {
+          countdownNum.textContent = '1';
+          countdownMsg.textContent = 'Say Brains...';
+        } else if (count === 0) {
+          countdownNum.textContent = '📸';
+          countdownMsg.textContent = 'Snapping!';
+        } else {
+          clearInterval(countdownTimer);
+          countdownActive = false;
+          countdownOverlay.style.display = 'none';
+          processImage();
+        }
+      }, 700);
+    }
+
+    function resetCountdown() {
+      if (countdownTimer) clearInterval(countdownTimer);
+      countdownActive = false;
+      countdownOverlay.style.display = 'none';
+    }
+
+    // 8. Face Detection & Tracking Render Loop (Debounced & Smoothed)
+    function renderDetectionLoop() {
+      requestAnimationFrame(renderDetectionLoop);
+
+      if (!video.videoWidth || !video.videoHeight || video.paused) {
+        return;
+      }
+
+      overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+      if (!faceDetector || isProcessing || isCoolingDown || !autoFaceToggle.checked) {
+        if (!autoFaceToggle.checked) {
+          badgeTrigger.textContent = 'TRIGGER: MANUAL / PEDAL';
+          faceStatusTag.textContent = 'Auto-Face Disabled';
+        }
+        lockTimerStart = null;
+        if (countdownActive) resetCountdown();
+        return;
+      }
+
+      badgeTrigger.textContent = 'TRIGGER: AUTO-FACE';
+
+      const now = performance.now();
+
+      // Only run inference when a new camera frame is available
+      if (video.currentTime !== lastVideoTime) {
+        lastVideoTime = video.currentTime;
+        try {
+          const freshDetections = faceDetector.detectForVideo(video, now);
+          if (freshDetections && freshDetections.detections) {
+            lastDetectionResults = freshDetections;
+            lastDetectionTimestamp = now;
+          }
+        } catch (e) {
+          console.debug('[MediaPipe] Detect frame skipped:', e);
+        }
+      }
+
+      let qualifiedFace = false;
+
+      // Retain detection cache for up to 400ms across animation ticks
+      const hasRecentDetection = lastDetectionResults && 
+                                 lastDetectionResults.detections && 
+                                 lastDetectionResults.detections.length > 0 && 
+                                 (now - lastDetectionTimestamp < 400);
+
+      if (hasRecentDetection) {
+        // Pick primary face (largest bounding box)
+        let primaryFace = lastDetectionResults.detections[0];
+        for (let i = 1; i < lastDetectionResults.detections.length; i++) {
+          if (lastDetectionResults.detections[i].boundingBox.width > primaryFace.boundingBox.width) {
+            primaryFace = lastDetectionResults.detections[i];
+          }
+        }
+
+        const box = primaryFace.boundingBox;
+        const rawWidthRatio = box.width / video.videoWidth;
+        
+        // Exponential smoothing on width ratio (70% previous + 30% new)
+        smoothedWidthRatio = smoothedWidthRatio > 0 
+          ? (smoothedWidthRatio * 0.70 + rawWidthRatio * 0.30) 
+          : rawWidthRatio;
+
+        telemetryProximity.textContent = `${(smoothedWidthRatio * 100).toFixed(1)}% (min 14%)`;
+
+        // Proximity threshold with hysteresis: 0.138 to start, 0.120 to retain
+        const proximityPass = lockTimerStart ? (smoothedWidthRatio >= 0.120) : (smoothedWidthRatio >= 0.138);
+
+        // Frontal gaze centering calculation
+        let rawYaw = 0.50;
+        let gazePass = false;
+
+        if (primaryFace.keypoints && primaryFace.keypoints.length >= 3) {
+          const rightEye = primaryFace.keypoints[0];
+          const leftEye = primaryFace.keypoints[1];
+          const nose = primaryFace.keypoints[2];
+
+          const minEyeX = Math.min(rightEye.x, leftEye.x);
+          const maxEyeX = Math.max(rightEye.x, leftEye.x);
+          const eyeDist = maxEyeX - minEyeX;
+
+          if (eyeDist > 0.01) {
+            rawYaw = (nose.x - minEyeX) / eyeDist;
+          }
+        }
+
+        // Exponential smoothing on yaw ratio to prevent micro-flickering
+        smoothedYawRatio = smoothedYawRatio * 0.70 + rawYaw * 0.30;
+        gazePass = (smoothedYawRatio >= 0.30 && smoothedYawRatio <= 0.70);
+
+        telemetryGaze.textContent = gazePass
+          ? `Centered (${smoothedYawRatio.toFixed(2)})`
+          : `Turned (${smoothedYawRatio.toFixed(2)})`;
+
+        // Draw bounding box
+        overlayCtx.lineWidth = 3;
+        overlayCtx.strokeStyle = (proximityPass && gazePass) || countdownActive ? '#00e676' : '#ff7700';
+        overlayCtx.strokeRect(box.originX, box.originY, box.width, box.height);
+
+        if (proximityPass && gazePass) {
+          qualifiedFace = true;
+          lastQualifiedTime = now;
+        } else {
+          faceStatusTag.textContent = proximityPass ? 'Please face camera' : 'Step closer';
+          faceStatusTag.style.color = 'var(--accent-orange)';
+        }
+      } else {
+        telemetryProximity.textContent = 'None detected';
+        telemetryGaze.textContent = 'Searching...';
+        if (activeMediaStream && !countdownActive) {
+          faceStatusTag.textContent = 'Looking for Face...';
+          faceStatusTag.style.color = '';
+        }
+      }
+
+      // Debounce window: tolerate momentary frame drops or jitter (< 350ms)
+      const timeSinceQualified = now - lastQualifiedTime;
+      const isEffectivelyLocked = qualifiedFace || (lockTimerStart && timeSinceQualified < 350);
+
+      if (isEffectivelyLocked) {
+        faceStatusTag.textContent = countdownActive ? 'Taking Photo...' : 'Face Locked!';
+        faceStatusTag.style.color = 'var(--accent-green)';
+
+        if (!lockTimerStart) {
+          lockTimerStart = now;
+        }
+
+        const lockElapsed = (now - lockTimerStart) / 1000;
+        telemetryLock.textContent = `${Math.min(lockElapsed, 1.0).toFixed(1)}s / 1.0s`;
+
+        // Start countdown once locked for 1.0 second
+        if (lockElapsed >= 1.0 && !countdownActive) {
+          console.log('[Photobooth] Face lock achieved for 1.0s! Starting countdown...');
+          startCountdown();
+        }
+      } else {
+        // Only reset if lost for more than 400ms
+        if (timeSinceQualified > 400) {
+          lockTimerStart = null;
+          telemetryLock.textContent = '0.0s / 1.0s';
+          // Never abort countdown unless user walked away for over 1.2s
+          if (countdownActive && timeSinceQualified > 1200) {
+            console.warn('[Photobooth] Attendee walked away during countdown, resetting.');
+            resetCountdown();
+          }
+        }
+      }
+    }
+
+    // 9. Event Triggers
+    // Trigger Mode 2: USB Foot Pedal (Ctrl + Alt + P)
+    window.addEventListener('keydown', (event) => {
+      if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 'p') {
+        event.preventDefault();
+        console.log('[Photobooth] USB Foot Pedal trigger (Ctrl+Alt+P) detected!');
+        processImage();
+      }
+    });
+
+    // Trigger Mode 3: Manual On-Screen Button
+    processBtn.addEventListener('click', () => {
+      console.log('[Photobooth] Manual button trigger clicked!');
+      processImage();
+    });
+
+    // Auto-Face Toggle
+    autoFaceToggle.addEventListener('change', () => {
+      if (!autoFaceToggle.checked) {
+        resetCountdown();
+        lockTimerStart = null;
+      }
+    });
+
+    // 10. Startup Sequence
+    async function init() {
+      // Initialize MediaPipe detector in parallel
+      initDetector();
+      // Populate devices and initialize camera
+      await populateCameraDevices();
+      await initCamera();
+      // Start detection render loop
+      renderDetectionLoop();
+    }
+
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>

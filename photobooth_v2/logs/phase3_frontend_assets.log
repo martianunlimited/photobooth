@@ -1,0 +1,12 @@
+[2026-10-28 04:43:07,539] [INFO] Starting Phase 3 Asset Downloads...
+[2026-10-28 04:43:07,540] [INFO] Downloading https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs -> E:\vibe_coding\photobooth_v2\frontend\vendor\tasks-vision.bundle.mjs
+[2026-10-28 04:43:08,116] [INFO] Saved tasks-vision.bundle.mjs: 136870 bytes | SHA256: e77f281f9619150d937023c355bae170e9120e3b9e43f1e23a2a7bee07197669
+[2026-10-28 04:43:08,116] [INFO] Downloading https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm/vision_wasm_internal.js -> E:\vibe_coding\photobooth_v2\frontend\vendor\wasm\vision_wasm_internal.js
+[2026-10-28 04:43:08,230] [INFO] Saved vision_wasm_internal.js: 209826 bytes | SHA256: 9440cf0cc0cea21800e31581ec32aeedcc5fbf9df4509796bbc7d3f99e52ab9c
+[2026-10-28 04:43:08,230] [INFO] Downloading https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm/vision_wasm_internal.wasm -> E:\vibe_coding\photobooth_v2\frontend\vendor\wasm\vision_wasm_internal.wasm
+[2026-10-28 04:43:16,629] [INFO] Saved vision_wasm_internal.wasm: 9423986 bytes | SHA256: f82a8e6c05e08a44cc9f9e7ec5f845935bcbb1b1500ebe8c2f4812fb4e2917dc
+[2026-10-28 04:43:16,630] [INFO] Downloading https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite -> E:\vibe_coding\photobooth_v2\frontend\vendor\models\blaze_face_short_range.tflite
+[2026-10-28 04:43:16,942] [INFO] Saved blaze_face_short_range.tflite: 229746 bytes | SHA256: b4578f35940bf5a1a655214a1cce5cab13eba73c1297cd78e1a04c2380b0152f
+[2026-10-28 04:43:16,942] [INFO] Generating diffusion animation GIF -> E:\vibe_coding\photobooth_v2\frontend\image.gif
+[2026-10-28 04:43:17,938] [INFO] Diffusion GIF saved to E:\vibe_coding\photobooth_v2\frontend\image.gif (size: 1046654 bytes)
+[2026-10-28 04:43:17,939] [INFO] All Phase 3 vendor assets downloaded and verified successfully.

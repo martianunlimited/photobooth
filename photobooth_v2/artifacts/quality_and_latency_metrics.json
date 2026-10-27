@@ -1,0 +1,7 @@
+{
+  "mean_latency_ms": 995.31,
+  "p95_latency_ms": 1003.61,
+  "actual_unet_steps": 9,
+  "guidance_scale": 6.0,
+  "peak_vram_mb": 4197.61
+}

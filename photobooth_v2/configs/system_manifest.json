@@ -1,0 +1,14 @@
+{
+  "python_version": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:26:41) [MSC v.1942 64 bit (AMD64)]",
+  "node_version": "v24.18.0",
+  "torch_version": "2.14.1+cu132",
+  "cuda_version": "13.2",
+  "gpu_name": "NVIDIA GeForce RTX 3090",
+  "hyperparameters": {
+    "steps": 15,
+    "strength": 0.6,
+    "guidance_scale": 6.0,
+    "clip_skip": 1,
+    "noise_sigma": 15.0
+  }
+}

@@ -1,0 +1,22 @@
+[2026-10-28 07:53:09,472] [INFO] Initializing Phase 1 Environment Initialization...
+[2026-10-28 07:53:09,776] [INFO] Python Runtime: 3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:26:41) [MSC v.1942 64 bit (AMD64)]
+[2026-10-28 07:53:09,776] [INFO] Node.js Runtime: v24.18.0 (npm: 11.16.0)
+[2026-10-28 07:53:09,776] [INFO] PyTorch Version: 2.14.1+cu132 (CUDA: 13.2)
+[2026-10-28 07:53:09,776] [INFO] GPU Hardware: NVIDIA GeForce RTX 3090
+[2026-10-28 07:53:09,776] [INFO] Verified Express installed at: E:\vibe_coding\photobooth_v2\frontend_node\node_modules\express
+[2026-10-28 07:53:09,776] [INFO] Persisted configs/system_manifest.json:
+{
+  "python_version": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:26:41) [MSC v.1942 64 bit (AMD64)]",
+  "node_version": "v24.18.0",
+  "torch_version": "2.14.1+cu132",
+  "cuda_version": "13.2",
+  "gpu_name": "NVIDIA GeForce RTX 3090",
+  "hyperparameters": {
+    "steps": 15,
+    "strength": 0.6,
+    "guidance_scale": 6.0,
+    "clip_skip": 1,
+    "noise_sigma": 15.0
+  }
+}
+[2026-10-28 07:53:09,776] [INFO] Phase 1 initialization completed successfully.

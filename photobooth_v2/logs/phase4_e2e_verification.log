@@ -1,0 +1,20 @@
+[2026-10-28T08:06:47.748604] Starting Phase 4 E2E Integration Verification
+Base Dir: E:\vibe_coding\photobooth_v2
+Python executable: E:\miniconda3\envs\comfyui\python.exe
+Launching FastAPI GPU Backend on port 8000...
+Launching Node.js Express Kiosk on port 3000...
+Polling http://127.0.0.1:3000/api/health until proxy and backend report ready...
+Proxy & GPU backend reported ready in 31.2s
+Health Response: {'status': 'ready', 'node_proxy': 'ok', 'gpu_backend': {'status': 'ok', 'gpu': 'NVIDIA GeForce RTX 3090', 'vram_allocated_mb': 3348.61}}
+Sending multipart POST with test_input_640x480.jpg to http://127.0.0.1:3000/api/zombify...
+HTTP Response Code: 200
+Total Roundtrip Proxy Latency: 1075.45 ms
+Upstream X-Gen-Time Header: 1061.73
+Content-Type: image/jpeg
+Response Payload Size: 22064 bytes
+JPEG Magic Bytes (0xFFD8 ... 0xFFD9) Verified: True
+New non-log disk files created during inference: []
+Zero Local Disk Writes Assertion: PASSED (Pure in-memory RAM streaming)
+E2E_PROXY_STATUS: PASS
+Terminating background test processes...
+Background processes terminated cleanly.
